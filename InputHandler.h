@@ -1,0 +1,48 @@
+#pragma once
+
+#include <list>
+#include <string>
+#include <unordered_map>
+#include <functional>
+
+#include "InputBuffer.h"
+
+class InputHandler;
+class InputContext;
+class Game;
+
+typedef std::function<void(const InputBuffer& inputs)> InputCallback;
+
+class InputHandler
+{
+public:
+	InputHandler(Game& ourGame);
+	InputHandler() = delete;
+	// ~InputHandler();
+
+
+	// @TODO: We ended up not using these. Do we still need them?
+	void Dispatch() const; 
+	void AddCallback(InputCallback callback, int priority);
+
+	InputBuffer GetBuffer() const;
+	void Clear();
+
+	void AddContext(const std::string name, InputContext* context, bool activated = true);
+	void ActivateContext(const std::string name);
+	void DeactivateContext(const std::string name);
+
+	void ProcessSDLInput();
+
+private:
+	std::map<const std::string, InputContext*> _inactive;
+	std::map<const std::string, InputContext*> _active;
+
+	std::multimap<int, InputCallback> _callbacks;
+	InputBuffer _currentBuffer;
+
+	void ProcessKey(const SDL_Keycode key, const bool isDown, const bool wasDown);
+	void ProcessMouseButton(const uint8_t button, const bool isDown);
+
+	Game& _ourGame;
+};
